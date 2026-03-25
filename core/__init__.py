@@ -1,0 +1,11 @@
+MUSE_ADDRESS = "00:55:DA:B8:35:23"
+
+CONTROL_UUID = "273e0001-4c4d-454d-96be-f03bac821358"
+EEG_UUIDS = {
+    "TP9":  "273e0003-4c4d-454d-96be-f03bac821358",
+    "AF7":  "273e0004-4c4d-454d-96be-f03bac821358",
+    "AF8":  "273e0005-4c4d-454d-96be-f03bac821358",
+    "TP10": "273e0006-4c4d-454d-96be-f03bac821358",
+}
+CHANNELS = ["TP9", "AF7", "AF8", "TP10"]
+FS = 256
