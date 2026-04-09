@@ -3,6 +3,7 @@ __pycache__/
 .ipynb_checkpoints/
 brainvenv/
 brainflow/
+venv/
 
 # Large model files (track with git-lfs or regenerate)
 *.pt
