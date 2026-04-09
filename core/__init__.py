@@ -9,3 +9,6 @@ EEG_UUIDS = {
 }
 CHANNELS = ["TP9", "AF7", "AF8", "TP10"]
 FS = 256
+
+GESTURE_LABELS = {0: "rest", 1: "blink", 2: "furrow", 3: "raise", 4: "clench"}
+NUM_GESTURES = 5
