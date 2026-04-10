@@ -173,12 +173,17 @@ Simpler but can miss brief raises and re-trigger on sustained noise.
 
 ### Simulation vs real-life thresholds
 
-| Setting | Simulation | Real-life |
-|---------|-----------|-----------|
-| Threshold | 0.7 | 0.3 |
-| Avg window | 5 | 5 |
+| Setting | Simulation | Real-life (best so far) |
+|---------|-----------|------------------------|
+| Threshold | 0.7 | **0.2** |
+| Avg window | 5 | **3** |
 | Cooldown | 0.8s | 0.8s |
 | Mode | peak | peak |
+
+The lower avg window (3 vs 5) reduces latency (~150ms vs ~250ms) and prevents
+a single low-confidence window from dragging down the average too much.
+Combined with the lower threshold, this catches more real raises while peak
+mode prevents re-triggering on sustained noise.
 
 ### BLE stream resilience
 

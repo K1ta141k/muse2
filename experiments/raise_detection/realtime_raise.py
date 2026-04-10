@@ -20,9 +20,12 @@ import argparse
 import time
 import threading
 import pickle
+import warnings
 import numpy as np
 from collections import deque
 from bleak import BleakClient
+
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 from core import MUSE_ADDRESS, CONTROL_UUID, EEG_UUIDS, CHANNELS, FS
 from core.audio import play, GESTURE_DETECT_SOUNDS, COUNTDOWN_BEEP, DONE_SOUND
@@ -34,10 +37,10 @@ WINDOW = 128  # 0.5s
 async def main():
     parser = argparse.ArgumentParser(description="Real-time brow-raise detection")
     parser.add_argument("--model", type=str, default="data/raise_data/raise_model.pkl")
-    parser.add_argument("--threshold", type=float, default=0.7)
+    parser.add_argument("--threshold", type=float, default=0.2)
     parser.add_argument("--cooldown", type=float, default=0.8)
-    parser.add_argument("--avg-window", type=int, default=5,
-                        help="Number of consecutive predictions to average (~250ms at 50ms step)")
+    parser.add_argument("--avg-window", type=int, default=3,
+                        help="Number of consecutive predictions to average (~150ms at 50ms step)")
     parser.add_argument("--mode", choices=["avg", "peak"], default="peak",
                         help="Detection mode: 'avg' = moving average, "
                              "'peak' = trigger on rising edge crossing threshold")
@@ -117,13 +120,13 @@ async def main():
 
                 now = time.monotonic()
 
-                # Check for stale stream
+                # Check for full stream stall (no packets at all)
                 stale = now - last_packet_time[0]
-                if stale > 2.0:
+                if stale > 3.0:
                     stall_count[0] += 1
-                    prob_history.clear()  # don't carry stale predictions
+                    prob_history.clear()
                     print(f"\r  !! STALL #{stall_count[0]}: no data for {stale:.1f}s — "
-                          f"waiting for stream to resume...       ", end="", flush=True)
+                          f"waiting for stream...                  ", end="", flush=True)
                     continue
 
                 with lock:
@@ -131,15 +134,9 @@ async def main():
                     if any(s < WINDOW for s in sizes.values()):
                         continue
 
-                    # Check per-channel freshness — skip if any channel is lagging
+                    # Track channel freshness for display (don't block on it)
                     ch_ages = {ch: now - ch_last_time[ch] for ch in CHANNELS}
                     max_age = max(ch_ages.values())
-                    if max_age > 0.5:
-                        stale_ch = max(ch_ages, key=ch_ages.get)
-                        print(f"\r  ~ {stale_ch} lagging ({max_age:.1f}s) — skipping    ",
-                              end="", flush=True)
-                        prob_history.clear()
-                        continue
 
                     window = np.column_stack(
                         [list(buffers[ch])[-WINDOW:] for ch in CHANNELS])
